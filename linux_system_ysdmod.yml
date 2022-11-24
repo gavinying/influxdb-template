@@ -91,8 +91,17 @@ kind: Dashboard
 metadata:
     name: obstinate-bhabha-43b001
 spec:
+    associations:
+        - kind: Label
+          name: sad-lederberg-c3b001
     charts:
-        - height: 1
+        - colors:
+            - hex: '#00C9FF'
+              id: base
+              name: laser
+              type: text
+          decimalPlaces: 1
+          height: 1
           kind: Single_Stat
           name: System Uptime
           queries:
@@ -105,7 +114,7 @@ spec:
                   |> last()
                   |> map(fn: (r) => ({ _value: float(v: r._value) / 86400.00 }))
           staticLegend: {}
-          suffix: ' days'
+          suffix: ' Days'
           width: 2
         - axes:
             - base: "10"
@@ -140,8 +149,8 @@ spec:
             - base: "10"
               name: x
               scale: linear
-            - base: "10"
-              label: Bytes
+            - base: "2"
+              label: Load
               name: "y"
               scale: linear
             - base: "10"
@@ -150,16 +159,15 @@ spec:
           geom: line
           height: 3
           kind: Xy
-          name: Network
+          name: System Load
           queries:
             - query: |-
                 from(bucket: v.bucket)
                   |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
                   |> filter(fn: (r) => r.host == v.linux_host)
-                  |> filter(fn: (r) => r._measurement == "net")
-                  |> filter(fn: (r) => r.interface == "eth0")
-                  |> filter(fn: (r) => r._field == "bytes_recv" or r._field == "bytes_sent")
-                  |> derivative(unit: v.windowPeriod, nonNegative: true)
+                  |> filter(fn: (r) => r._measurement == "system")
+                  |> filter(fn: (r) => r._field == "load1" or r._field == "load5" or r._field == "load15")
+                  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)
           staticLegend: {}
           width: 4
           xCol: _time
@@ -213,15 +221,15 @@ spec:
                   |> filter(fn: (r) => r.host == v.linux_host)
                   |> last()
           staticLegend: {}
-          suffix: ' cpus'
+          suffix: ' CPUs'
           width: 2
           xPos: 4
         - axes:
             - base: "10"
               name: x
               scale: linear
-            - base: "2"
-              label: Load
+            - base: "10"
+              label: Bytes
               name: "y"
               scale: linear
             - base: "10"
@@ -230,15 +238,16 @@ spec:
           geom: line
           height: 3
           kind: Xy
-          name: System Load
+          name: Network
           queries:
             - query: |-
                 from(bucket: v.bucket)
                   |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
                   |> filter(fn: (r) => r.host == v.linux_host)
-                  |> filter(fn: (r) => r._measurement == "system")
-                  |> filter(fn: (r) => r._field == "load1" or r._field == "load5" or r._field == "load15")
-                  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)
+                  |> filter(fn: (r) => r._measurement == "net")
+                  |> filter(fn: (r) => r.interface == "eth0")
+                  |> filter(fn: (r) => r._field == "bytes_recv" or r._field == "bytes_sent")
+                  |> derivative(unit: v.windowPeriod, nonNegative: true)
           staticLegend: {}
           width: 4
           xCol: _time
@@ -300,9 +309,6 @@ spec:
               name: y2
               scale: linear
           colors:
-            - hex: '#00C9FF'
-              name: laser
-              type: text
             - hex: '#8F8AF4'
               name: Do Androids Dream of Electric Sheep?
               type: scale
@@ -312,6 +318,19 @@ spec:
             - hex: '#F4CF31'
               name: Do Androids Dream of Electric Sheep?
               type: scale
+            - hex: '#4ED8A0'
+              name: rainforest
+              type: text
+            - hex: '#FFB94A'
+              id: CBI7Y2g00RtZepaQs_a7w
+              name: pineapple
+              type: text
+              value: 50
+            - hex: '#DC4E58'
+              id: do-85uHuFRw8nIKlDPaN4
+              name: fire
+              type: text
+              value: 90
           decimalPlaces: 1
           height: 4
           kind: Single_Stat_Plus_Line
