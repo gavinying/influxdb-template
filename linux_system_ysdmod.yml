@@ -1,0 +1,418 @@
+apiVersion: influxdata.com/v2alpha1
+kind: Label
+metadata:
+    name: sad-lederberg-c3b001
+spec:
+    color: '#7A65F2'
+    name: Linux System Template
+---
+apiVersion: influxdata.com/v2alpha1
+kind: Bucket
+metadata:
+    name: gallant-banach-c3b005
+spec:
+    associations:
+        - kind: Label
+          name: sad-lederberg-c3b001
+    name: Telegraf
+    retentionRules:
+        - everySeconds: 604800
+          type: expire
+---
+apiVersion: influxdata.com/v2alpha1
+kind: Bucket
+metadata:
+    name: realistic-wozniak-03b001
+spec:
+    associations:
+        - kind: Label
+          name: sad-lederberg-c3b001
+    name: Telegraf-1h-downsample
+    retentionRules:
+        - everySeconds: 7.776e+06
+          type: expire
+---
+apiVersion: influxdata.com/v2alpha1
+kind: Task
+metadata:
+    name: happy-napier-03b005
+spec:
+    associations:
+        - kind: Label
+          name: sad-lederberg-c3b001
+    cron: 2 4 * * *
+    name: Telegraf-1h-downsample
+    query: |-
+        // Defines a data source
+        data =
+            from(bucket: "Telegraf")
+                |> range(start: -48h)
+
+        data
+            // Windows and aggregates the data in to 1h averages
+            |> aggregateWindow(fn: mean, every: 1h)
+            // Stores the aggregated data in a new bucket
+            |> to(bucket: "Telegraf-1h-downsample")
+---
+apiVersion: influxdata.com/v2alpha1
+kind: Variable
+metadata:
+    name: modest-cerf-43b001
+spec:
+    associations:
+        - kind: Label
+          name: sad-lederberg-c3b001
+    language: flux
+    name: bucket
+    query: |-
+        buckets()
+          |> filter(fn: (r) => r.name !~ /^_/)
+          |> rename(columns: {name: "_value"})
+          |> keep(columns: ["_value"])
+    type: query
+---
+apiVersion: influxdata.com/v2alpha1
+kind: Variable
+metadata:
+    name: naughty-wing-03b009
+spec:
+    associations:
+        - kind: Label
+          name: sad-lederberg-c3b001
+    language: flux
+    name: linux_host
+    query: |-
+        import "influxdata/influxdb/v1"
+        v1.measurementTagValues(bucket: v.bucket, measurement: "cpu", tag: "host")
+    type: query
+---
+apiVersion: influxdata.com/v2alpha1
+kind: Dashboard
+metadata:
+    name: obstinate-bhabha-43b001
+spec:
+    charts:
+        - height: 1
+          kind: Single_Stat
+          name: System Uptime
+          queries:
+            - query: |-
+                from(bucket: v.bucket)
+                  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+                  |> filter(fn: (r) => r._measurement == "system")
+                  |> filter(fn: (r) => r._field == "uptime")
+                  |> filter(fn: (r) => r.host == v.linux_host)
+                  |> last()
+                  |> map(fn: (r) => ({ _value: float(v: r._value) / 86400.00 }))
+          staticLegend: {}
+          suffix: ' days'
+          width: 2
+        - axes:
+            - base: "10"
+              name: x
+              scale: linear
+            - base: "10"
+              name: "y"
+              scale: linear
+              suffix: '%'
+            - base: "10"
+              name: y2
+              scale: linear
+          geom: line
+          height: 3
+          kind: Xy
+          name: CPU Usage
+          queries:
+            - query: |-
+                from(bucket: v.bucket)
+                  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+                  |> filter(fn: (r) => r.host == v.linux_host)
+                  |> filter(fn: (r) => r._measurement == "cpu")
+                  |> filter(fn: (r) => r._field == "usage_user" or r._field == "usage_system")
+                  |> filter(fn: (r) => r.cpu == "cpu-total")
+                  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)
+          staticLegend: {}
+          width: 4
+          xCol: _time
+          yCol: _value
+          yPos: 1
+        - axes:
+            - base: "10"
+              name: x
+              scale: linear
+            - base: "10"
+              label: Bytes
+              name: "y"
+              scale: linear
+            - base: "10"
+              name: y2
+              scale: linear
+          geom: line
+          height: 3
+          kind: Xy
+          name: Network
+          queries:
+            - query: |-
+                from(bucket: v.bucket)
+                  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+                  |> filter(fn: (r) => r.host == v.linux_host)
+                  |> filter(fn: (r) => r._measurement == "net")
+                  |> filter(fn: (r) => r.interface == "eth0")
+                  |> filter(fn: (r) => r._field == "bytes_recv" or r._field == "bytes_sent")
+                  |> derivative(unit: v.windowPeriod, nonNegative: true)
+          staticLegend: {}
+          width: 4
+          xCol: _time
+          yCol: _value
+          yPos: 4
+        - colors:
+            - hex: '#4ED8A0'
+              id: base
+              name: rainforest
+              type: background
+            - hex: '#FFB94A'
+              id: GpOxzbkM1WBXSrF73mtxl
+              name: pineapple
+              type: background
+              value: 70
+            - hex: '#DC4E58'
+              id: Germj5It8nF9xrLOVR4uY
+              name: fire
+              type: background
+              value: 90
+          decimalPlaces: 1
+          height: 1
+          kind: Single_Stat
+          name: CPU Temp
+          queries:
+            - query: |-
+                from(bucket: v.bucket)
+                  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+                  |> filter(fn: (r) => r["_measurement"] == "temp")
+                  |> filter(fn: (r) => r["host"] == v.linux_host)
+                  |> filter(fn: (r) => r["_field"] == "temp")
+                  |> last()
+          staticLegend: {}
+          suffix: °C
+          width: 2
+          xPos: 2
+        - colors:
+            - hex: '#00C9FF'
+              name: laser
+              type: text
+          decimalPlaces: 0
+          height: 1
+          kind: Single_Stat
+          name: nCPUs
+          queries:
+            - query: |-
+                from(bucket: v.bucket)
+                  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+                  |> filter(fn: (r) => r._measurement == "system")
+                  |> filter(fn: (r) => r._field == "n_cpus")
+                  |> filter(fn: (r) => r.host == v.linux_host)
+                  |> last()
+          staticLegend: {}
+          suffix: ' cpus'
+          width: 2
+          xPos: 4
+        - axes:
+            - base: "10"
+              name: x
+              scale: linear
+            - base: "2"
+              label: Load
+              name: "y"
+              scale: linear
+            - base: "10"
+              name: y2
+              scale: linear
+          geom: line
+          height: 3
+          kind: Xy
+          name: System Load
+          queries:
+            - query: |-
+                from(bucket: v.bucket)
+                  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+                  |> filter(fn: (r) => r.host == v.linux_host)
+                  |> filter(fn: (r) => r._measurement == "system")
+                  |> filter(fn: (r) => r._field == "load1" or r._field == "load5" or r._field == "load15")
+                  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)
+          staticLegend: {}
+          width: 4
+          xCol: _time
+          xPos: 4
+          yCol: _value
+          yPos: 1
+        - axes:
+            - base: "10"
+              name: x
+              scale: linear
+            - base: "10"
+              name: "y"
+              scale: linear
+              suffix: '%'
+            - base: "10"
+              name: y2
+              scale: linear
+          geom: line
+          height: 3
+          kind: Xy
+          name: Disk Usage
+          queries:
+            - query: |-
+                from(bucket: v.bucket)
+                  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+                  |> filter(fn: (r) => r.host == v.linux_host)
+                  |> filter(fn: (r) => r._measurement == "disk")
+                  |> filter(fn: (r) => r._field == "used_percent")
+                  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)
+          staticLegend: {}
+          width: 4
+          xCol: _time
+          xPos: 4
+          yCol: _value
+          yPos: 4
+        - colors:
+            - hex: '#00C9FF'
+              name: laser
+              type: text
+          decimalPlaces: 2
+          height: 1
+          kind: Single_Stat
+          name: Total Memory
+          queries:
+            - query: "from(bucket: v.bucket)\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"mem\")  \n  |> filter(fn: (r) => r._field == \"total\")\n  |> filter(fn: (r) => r.host == v.linux_host)\n  |> last()  \n  |> map(fn: (r) => ({r with _value: float(v: r._value) / 1024.0 / 1024.0 / 1024.0}))"
+          staticLegend: {}
+          suffix: ' GB'
+          width: 2
+          xPos: 6
+        - axes:
+            - base: "10"
+              name: x
+              scale: linear
+            - base: "10"
+              name: "y"
+              scale: linear
+              suffix: '%'
+            - base: "10"
+              name: y2
+              scale: linear
+          colors:
+            - hex: '#00C9FF'
+              name: laser
+              type: text
+            - hex: '#8F8AF4'
+              name: Do Androids Dream of Electric Sheep?
+              type: scale
+            - hex: '#A51414'
+              name: Do Androids Dream of Electric Sheep?
+              type: scale
+            - hex: '#F4CF31'
+              name: Do Androids Dream of Electric Sheep?
+              type: scale
+          decimalPlaces: 1
+          height: 4
+          kind: Single_Stat_Plus_Line
+          name: Memory Usage
+          queries:
+            - query: |-
+                from(bucket: v.bucket)
+                  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+                  |> filter(fn: (r) => r.host == v.linux_host)
+                  |> filter(fn: (r) => r._measurement == "mem")
+                  |> filter(fn: (r) => r._field == "used_percent")
+                  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)
+          staticLegend: {}
+          suffix: '%'
+          width: 4
+          xCol: _time
+          xPos: 8
+          yCol: _value
+        - axes:
+            - base: "10"
+              name: x
+              scale: linear
+            - base: "10"
+              name: "y"
+              scale: linear
+            - base: "10"
+              name: y2
+              scale: linear
+          geom: line
+          height: 3
+          kind: Xy
+          name: Swap
+          queries:
+            - query: |-
+                from(bucket: v.bucket)
+                  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+                  |> filter(fn: (r) => r["host"] == v.linux_host)
+                  |> filter(fn: (r) => r._measurement == "swap")
+                  |> filter(fn: (r) => r._field == "total" or r._field == "used")
+                  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)
+          staticLegend: {}
+          width: 4
+          xCol: _time
+          xPos: 8
+          yCol: _value
+          yPos: 4
+    description: A collection of useful visualizations for monitoring your Linux system
+    name: Linux System (ysdmod)
+---
+apiVersion: influxdata.com/v2alpha1
+kind: Telegraf
+metadata:
+    name: sleepy-joliot-83b003
+spec:
+    associations:
+        - kind: Label
+          name: sad-lederberg-c3b001
+    config: |
+        [global_tags]
+
+        [agent]
+          interval = "60s"
+          round_interval = true
+          metric_batch_size = 1000
+          metric_buffer_limit = 10000
+          collection_jitter = "0s"
+          flush_interval = "60s"
+          flush_jitter = "0s"
+          precision = ""
+          debug = false
+          quiet = false
+          omit_hostname = false
+          hostname = "${HOSTNAME}"
+
+        # InfluxDBCloud
+        [[outputs.influxdb_v2]]
+          urls = ["${INFLUX_CLOUD_URL}"]
+          organization = "${INFLUX_CLOUD_ORG}"
+          token = "${INFLUX_CLOUD_TOKEN}"
+          bucket = "Telegraf"
+        # EndInfluxDBCloud
+
+        # SystemInput
+        [[inputs.cpu]]
+          percpu = true
+          totalcpu = true
+          collect_cpu_time = false
+          report_active = false
+        [[inputs.disk]]
+          ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]
+        [[inputs.diskio]]
+        [[inputs.kernel]]
+        [[inputs.mem]]
+        [[inputs.net]]
+        [[inputs.processes]]
+        [[inputs.swap]]
+        [[inputs.system]]
+          fielddrop = ["uptime_format"]
+        [[inputs.internal]]
+          collect_memstats = true
+        [[inputs.temp]]
+        # EndSystemInput
+    description: A collection of useful metrics for monitoring your Linux system
+    name: Linux System Monitoring
