@@ -1,7 +1,7 @@
 apiVersion: influxdata.com/v2alpha1
 kind: Label
 metadata:
-    name: sad-lederberg-c3b001
+    name: linux-system-template
 spec:
     color: '#7A65F2'
     name: Linux System Template
@@ -9,11 +9,11 @@ spec:
 apiVersion: influxdata.com/v2alpha1
 kind: Bucket
 metadata:
-    name: gallant-banach-c3b005
+    name: telegraf
 spec:
     associations:
         - kind: Label
-          name: sad-lederberg-c3b001
+          name: linux-system-template
     name: Telegraf
     retentionRules:
         - everySeconds: 604800
@@ -22,11 +22,11 @@ spec:
 apiVersion: influxdata.com/v2alpha1
 kind: Bucket
 metadata:
-    name: realistic-wozniak-03b001
+    name: telegraf-1h-downsample
 spec:
     associations:
         - kind: Label
-          name: sad-lederberg-c3b001
+          name: linux-system-template
     name: Telegraf-1h-downsample
     retentionRules:
         - everySeconds: 7.776e+06
@@ -35,11 +35,11 @@ spec:
 apiVersion: influxdata.com/v2alpha1
 kind: Task
 metadata:
-    name: happy-napier-03b005
+    name: telegraf-downsample
 spec:
     associations:
         - kind: Label
-          name: sad-lederberg-c3b001
+          name: linux-system-template
     cron: 2 4 * * *
     name: Telegraf-1h-downsample
     query: |-
@@ -57,11 +57,11 @@ spec:
 apiVersion: influxdata.com/v2alpha1
 kind: Variable
 metadata:
-    name: modest-cerf-43b001
+    name: bucket
 spec:
     associations:
         - kind: Label
-          name: sad-lederberg-c3b001
+          name: linux-system-template
     language: flux
     name: bucket
     query: |-
@@ -74,11 +74,11 @@ spec:
 apiVersion: influxdata.com/v2alpha1
 kind: Variable
 metadata:
-    name: naughty-wing-03b009
+    name: linux-host
 spec:
     associations:
         - kind: Label
-          name: sad-lederberg-c3b001
+          name: linux-system-template
     language: flux
     name: linux_host
     query: |-
@@ -89,11 +89,11 @@ spec:
 apiVersion: influxdata.com/v2alpha1
 kind: Dashboard
 metadata:
-    name: obstinate-bhabha-43b001
+    name: linux-system
 spec:
     associations:
         - kind: Label
-          name: sad-lederberg-c3b001
+          name: linux-system-template
     charts:
         - colors:
             - hex: '#00C9FF'
@@ -383,11 +383,11 @@ spec:
 apiVersion: influxdata.com/v2alpha1
 kind: Telegraf
 metadata:
-    name: sleepy-joliot-83b003
+    name: linux-system-monitoring
 spec:
     associations:
         - kind: Label
-          name: sad-lederberg-c3b001
+          name: linux-system-template
     config: |
         [global_tags]
 
