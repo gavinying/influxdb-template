@@ -1,7 +1,7 @@
 apiVersion: influxdata.com/v2alpha1
 kind: Label
 metadata:
-    name: linux-system-template
+    name: linux-system-template-ysd
 spec:
     color: '#7A65F2'
     name: Linux System Template
@@ -9,11 +9,11 @@ spec:
 apiVersion: influxdata.com/v2alpha1
 kind: Bucket
 metadata:
-    name: telegraf
+    name: telegraf-ysd
 spec:
     associations:
         - kind: Label
-          name: linux-system-template
+          name: linux-system-template-ysd
     name: Telegraf
     retentionRules:
         - everySeconds: 604800
@@ -22,11 +22,11 @@ spec:
 apiVersion: influxdata.com/v2alpha1
 kind: Bucket
 metadata:
-    name: telegraf-1h-downsample
+    name: telegraf-1h-downsample-ysd
 spec:
     associations:
         - kind: Label
-          name: linux-system-template
+          name: linux-system-template-ysd
     name: Telegraf-1h-downsample
     retentionRules:
         - everySeconds: 7.776e+06
@@ -35,11 +35,11 @@ spec:
 apiVersion: influxdata.com/v2alpha1
 kind: Task
 metadata:
-    name: telegraf-downsample
+    name: telegraf-downsample-ysd
 spec:
     associations:
         - kind: Label
-          name: linux-system-template
+          name: linux-system-template-ysd
     cron: 2 4 * * *
     name: Telegraf-1h-downsample
     query: |-
@@ -57,11 +57,11 @@ spec:
 apiVersion: influxdata.com/v2alpha1
 kind: Variable
 metadata:
-    name: bucket
+    name: bucket-ysd
 spec:
     associations:
         - kind: Label
-          name: linux-system-template
+          name: linux-system-template-ysd
     language: flux
     name: bucket
     query: |-
@@ -74,11 +74,11 @@ spec:
 apiVersion: influxdata.com/v2alpha1
 kind: Variable
 metadata:
-    name: linux-host
+    name: linux-host-ysd
 spec:
     associations:
         - kind: Label
-          name: linux-system-template
+          name: linux-system-template-ysd
     language: flux
     name: linux_host
     query: |-
@@ -89,11 +89,11 @@ spec:
 apiVersion: influxdata.com/v2alpha1
 kind: Dashboard
 metadata:
-    name: linux-system
+    name: linux-system-ysd
 spec:
     associations:
         - kind: Label
-          name: linux-system-template
+          name: linux-system-template-ysd
     charts:
         - colors:
             - hex: '#00C9FF'
@@ -383,11 +383,11 @@ spec:
 apiVersion: influxdata.com/v2alpha1
 kind: Telegraf
 metadata:
-    name: linux-system-monitoring
+    name: linux-system-monitoring-ysd
 spec:
     associations:
         - kind: Label
-          name: linux-system-template
+          name: linux-system-template-ysd
     config: |
         [global_tags]
 
