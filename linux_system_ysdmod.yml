@@ -229,36 +229,6 @@ spec:
               name: x
               scale: linear
             - base: "10"
-              label: Bytes
-              name: "y"
-              scale: linear
-            - base: "10"
-              name: y2
-              scale: linear
-          geom: line
-          height: 3
-          kind: Xy
-          name: Network
-          queries:
-            - query: |-
-                from(bucket: v.bucket)
-                  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-                  |> filter(fn: (r) => r.host == v.linux_host)
-                  |> filter(fn: (r) => r._measurement == "net")
-                  |> filter(fn: (r) => r.interface == "eth0")
-                  |> filter(fn: (r) => r._field == "bytes_recv" or r._field == "bytes_sent")
-                  |> derivative(unit: v.windowPeriod, nonNegative: true)
-          staticLegend: {}
-          width: 4
-          xCol: _time
-          xPos: 4
-          yCol: _value
-          yPos: 1
-        - axes:
-            - base: "10"
-              name: x
-              scale: linear
-            - base: "10"
               name: "y"
               scale: linear
               suffix: '%'
@@ -277,6 +247,35 @@ spec:
                   |> filter(fn: (r) => r._measurement == "disk")
                   |> filter(fn: (r) => r._field == "used_percent")
                   |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)
+          staticLegend: {}
+          width: 4
+          xCol: _time
+          xPos: 4
+          yCol: _value
+          yPos: 1
+        - axes:
+            - base: "10"
+              name: x
+              scale: linear
+            - base: "10"
+              label: Bytes
+              name: "y"
+              scale: linear
+            - base: "10"
+              name: y2
+              scale: linear
+          geom: line
+          height: 3
+          kind: Xy
+          name: Disk IO
+          queries:
+            - query: |-
+                from(bucket: v.bucket)
+                  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+                  |> filter(fn: (r) => r._measurement == "diskio")
+                  |> filter(fn: (r) => r._field == "read_bytes" or r._field == "write_bytes")
+                  |> filter(fn: (r) => r.host == v.linux_host)
+                  |> derivative(unit: v.windowPeriod, nonNegative: false)
           staticLegend: {}
           width: 4
           xCol: _time
@@ -354,6 +353,7 @@ spec:
               name: x
               scale: linear
             - base: "10"
+              label: Bytes
               name: "y"
               scale: linear
             - base: "10"
@@ -362,15 +362,16 @@ spec:
           geom: line
           height: 3
           kind: Xy
-          name: Swap
+          name: Network
           queries:
             - query: |-
                 from(bucket: v.bucket)
                   |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-                  |> filter(fn: (r) => r["host"] == v.linux_host)
-                  |> filter(fn: (r) => r._measurement == "swap")
-                  |> filter(fn: (r) => r._field == "total" or r._field == "used")
-                  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)
+                  |> filter(fn: (r) => r.host == v.linux_host)
+                  |> filter(fn: (r) => r._measurement == "net")
+                  |> filter(fn: (r) => r.interface == "eth0")
+                  |> filter(fn: (r) => r._field == "bytes_recv" or r._field == "bytes_sent")
+                  |> derivative(unit: v.windowPeriod, nonNegative: true)
           staticLegend: {}
           width: 4
           xCol: _time
