@@ -275,7 +275,7 @@ spec:
                   |> filter(fn: (r) => r._measurement == "diskio")
                   |> filter(fn: (r) => r._field == "read_bytes" or r._field == "write_bytes")
                   |> filter(fn: (r) => r.host == v.linux_host)
-                  |> derivative(unit: v.windowPeriod, nonNegative: false)
+                  |> derivative(unit: v.windowPeriod, nonNegative: true)
           staticLegend: {}
           width: 4
           xCol: _time
